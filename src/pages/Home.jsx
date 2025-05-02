@@ -3,17 +3,32 @@ import { searchMovies } from '../services/omdbAPI';
 import { saveFavorite } from '../utils/localStorage';
 import { Link } from 'react-router-dom';
 
+const DEFAULT_QUERY = '2025';
+
 const Home = () => {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
     const [messageMap, setMessageMap] = useState({});
+
+    useEffect(() => {
+        searchMovies(DEFAULT_QUERY).then((res) => {
+            setResults(res);
+            setLoading(false);
+        });
+    }, []);
 
     useEffect(() => {
         if (query.length > 2) {
             setLoading(true);
             searchMovies(query).then((res) => {
+                setResults(res);
+                setLoading(false);
+            });
+        } else if (query.length === 0) {
+            setLoading(true);
+            searchMovies(DEFAULT_QUERY).then((res) => {
                 setResults(res);
                 setLoading(false);
             });
@@ -60,7 +75,7 @@ const Home = () => {
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search for movies..."
+                    placeholder="Search movies..."
                     style={{
                         width: isMobile ? '90%' : '100%',
                         padding: '0.75rem 1rem',
@@ -82,11 +97,11 @@ const Home = () => {
                         animation: 'spin 1s linear infinite'
                     }} />
                     <style>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
+                        @keyframes spin {
+                          0% { transform: rotate(0deg); }
+                          100% { transform: rotate(360deg); }
+                        }
+                    `}</style>
                 </div>
             ) : (
                 <div
@@ -108,7 +123,7 @@ const Home = () => {
                             }}
                         >
                             <img
-                                src={movie.Poster}
+                                src={movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/300x445?text=No+Image'}
                                 alt={movie.Title}
                                 style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
                             />
@@ -133,6 +148,6 @@ const Home = () => {
             )}
         </div>
     );
-}
+};
 
 export default Home;
